@@ -174,7 +174,7 @@ def gradient(df, Y, emb_user, emb_movie):
 
 
 def gradient_descent(
-    df, emb_user, emb_movie, iterations=100, learning_rate=0.01, df_val=None, freq=50
+    df, emb_user, emb_movie, iterations=100, learning_rate=0.01, has_val=False, df_val=None, freq=50
 ):
     """
     Computes gradient descent with momentum (0.9) for a number of iterations.
@@ -185,6 +185,7 @@ def gradient_descent(
       emb_user: the trained user embedding
       emb_movie: the trained movie embedding
     """
+    history = {'train': [], 'val': []}
     Y = df2matrix(df, emb_user.shape[0], emb_movie.shape[0])
     Y_mat = np.array(Y.todense())
     mask = np.where(Y_mat != 0, 1, 0)
@@ -204,10 +205,14 @@ def gradient_descent(
         emb_movie = emb_movie - learning_rate * v_movie
 
         if i % freq == 0:
-            if df_val == None:
-                print(f"{i} {cost(df, emb_user, emb_movie)} None")
+            train_loss = cost(df, emb_user, emb_movie)
+            if not has_val:
+                print(f"{i} {train_loss} None")
             else:
+                val_loss = cost(df_val, emb_user, emb_movie)
                 print(
-                    f"{i} {cost(df, emb_user, emb_movie)} {cost(df_val, emb_user, emb_movie)}"
+                    f"{i} {train_loss} {val_loss}"
                 )
-    return emb_user, emb_movie
+                history['val'].append(val_loss)
+            history['train'].append(train_loss)
+    return emb_user, emb_movie, history
