@@ -25,14 +25,15 @@ def encode_data(df):
       num_users
       num_movies
     """
+    p_user, p_movie = proc_col(df["userId"]), proc_col(df["movieId"])
     d = {
-        "userId": proc_col(df["userId"])[1],
-        "movieId": proc_col(df["movieId"])[1],
+        "userId": p_user[1],
+        "movieId": p_movie[1],
         "rating": df["rating"],
     }
     df = pd.DataFrame(data=d)
-    num_users = proc_col(df["userId"])[2]
-    num_movies = proc_col(df["movieId"])[2]
+    num_users = p_user[2]
+    num_movies = p_movie[2]
     return df, num_users, num_movies
 
 
@@ -173,7 +174,7 @@ def gradient(df, Y, emb_user, emb_movie):
 
 
 def gradient_descent(
-    df, emb_user, emb_movie, iterations=100, learning_rate=0.01, df_val=None
+    df, emb_user, emb_movie, iterations=100, learning_rate=0.01, df_val=None, freq=50
 ):
     """
     Computes gradient descent with momentum (0.9) for a number of iterations.
@@ -195,13 +196,14 @@ def gradient_descent(
     v_movie = np.zeros(emb_movie.shape)
 
     for i in range(iterations):
-        v_user = 0.9 * v_user + 0.1 * gradient(df, Y, emb_user, emb_movie)[0]
-        v_movie = 0.9 * v_movie + 0.1 * gradient(df, Y, emb_user, emb_movie)[1]
+        user_grad, movie_grad = gradient(df, Y, emb_user, emb_movie)
+        v_user = 0.9 * v_user + 0.1 * user_grad
+        v_movie = 0.9 * v_movie + 0.1 * movie_grad
 
         emb_user = emb_user - learning_rate * v_user
         emb_movie = emb_movie - learning_rate * v_movie
 
-        if i % 50 == 0:
+        if i % freq == 0:
             if df_val == None:
                 print(f"{i} {cost(df, emb_user, emb_movie)} None")
             else:
