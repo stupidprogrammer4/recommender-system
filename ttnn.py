@@ -1,3 +1,8 @@
+import tensorflow as tf
+import tensorflow_recommenders as tfrs
+import tensorflow_datasets as tfds
+
+
 MOVIE_FEATURES = ['movie_title', 'movie_genres', 'movie_title_text']
 USER_FEATURES = ['user_id', 'timestamp', 'bucketized_user_age']
 
